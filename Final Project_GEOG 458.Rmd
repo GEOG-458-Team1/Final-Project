@@ -4,31 +4,62 @@ author: "Aldrin Carbonell, Johnny Nguyen, Andy Tseng, Samuel Perng, Justin Choi"
 date: "March 6, 2019"
 output: html_document
 ---
-```{r}
+# Gentrification of King County, Washington: 2009 & 2017
+
+```{r setup, results='hide', message=FALSE, warning=FALSE, echo=FALSE}
 library(rgdal)
 library(sp)
 library(leaflet)
 library(raster)
 library(tmap)
+library(dplyr)
 ```
 
-```{r setup, include=FALSE}
+```{r include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 #loading in the data and cutting it to the columns we need 
 ethnicity2009 <-read.csv(file="2009_Ethnicity/ACS_09_5YR_B02001_with_ann.csv", header=TRUE, sep=",")
 ethnicity2009 <- ethnicity2009[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD02")]
 
+#2017 data
+#ethnicty
 ethnicity2017<-read.csv(file="2017_Ethnicity/ACS_17_5YR_B02001_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
 ethnicity2017 <- ethnicity2017[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD02")]
+colnames(ethnicity2017)[colnames(ethnicity2017)=="HD01_VD01"] <- "ethnicity.HD01_VD01"
+colnames(ethnicity2017)[colnames(ethnicity2017)=="HD01_VD02"] <- "ethnicity.HD01_VD02"
 
-ethnicty <- merge(ethnicity2017, ethnicity2009, by.x='GEO.id2',by.y='GEO.id2')
+#education
+edu2017<-read.csv(file="2017_Education_Attainment/ACS_17_5YR_S1501_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+edu2017 <- edu2017[-1,c("GEO.id", "GEO.id2","HC01_EST_VC06","HC01_EST_VC12")]
+
+#poverty
+poverty2017 <-read.csv(file="2017_Poverty/ACS_17_5YR_S1701_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+poverty2017 <- poverty2017[-1,c("GEO.id", "GEO.id2","HC03_EST_VC01")]
+
+#housing
+housing2017 <-read.csv(file="2017_Housing/ACS_17_5YR_B25003_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+housing2017 <- housing2017[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD03")]
 
 
+
+
+#ethnicty merge test
+#ethnicty <- merge(ethnicity2017, ethnicity2009, by.x='GEO.id2',by.y='GEO.id2')
+
+```
+```{r echo=FALSE}
+#get non white population count
+ethnicity2017 <- ethnicity2017 %>% 
+  mutate(nonwhitepop = as.numeric(ethnicity.HD01_VD01) - as.numeric(ethnicity.HD01_VD02))
+
+#generate z scores for ethnicity
+ethnicity2017 <- ethnicity2017 %>% 
+  mutate(nonwhitepop_zcores = scale(as.numeric(nonwhitepop)))
 
 ```
 
-```{r}
+```{r echo=FALSE}
 #loading in king county census tract
 KC_shape <- shapefile("king10ct/king10ct.shp")
 
@@ -38,18 +69,19 @@ KC_shape_merged <- merge(KC_shape,ethnicity2017,by.x='GEOID10'
 ```
 
 
-```{r}
+##Gentrification in King County, Washington
+```{r echo=FALSE}
 #get range for data
-population <- as.numeric(KC_shape_merged$HD01_VD02)
+z_scores <- as.numeric(KC_shape_merged$nonwhitepop_zcores)
 #bins <- quantile(population, probs = c(0.25, 0.50, .75,1))
-bins <- quantile(population)
+bins <- quantile(z_scores)
 #create color pallete 
-pal <- colorBin("YlOrRd", domain = KC_shape_merged$HD01_VD02, bins = bins)
+pal <- colorBin("YlOrRd", domain = KC_shape_merged$nonwhitepop_zcores, bins = bins)
 
 #labels for leaflet
 labels <- sprintf(
   "<strong>%s</strong><br/>Population White: %s people<sup></sup>",
-  KC_shape_merged$NAMELSAD10, KC_shape_merged$HD01_VD02
+  KC_shape_merged$NAMELSAD10, KC_shape_merged$ethnicity.HD01_VD02
 ) %>% lapply(htmltools::HTML)
 
 
@@ -58,15 +90,21 @@ PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged <- sp::spTransform(KC_shape_merged,PRO)
 
 #leaflet map
-leaflet(KC_shape_merged) %>% 
+m <- leaflet(KC_shape_merged) %>% 
   addTiles() %>% addProviderTiles(providers$OpenStreetMap) %>% 
-  addPolygons(fill = TRUE, fillColor = ~pal(as.numeric(KC_shape_merged$HD01_VD02)),  
+  addPolygons(fill = TRUE, fillColor = ~pal(as.numeric(KC_shape_merged$nonwhitepop_zcores)),
   weight = 1,
   opacity = 1,
   color = "white",
   fillOpacity = 0.7,
-  label = labels)
+  label = labels
+  )
+m <- m %>% 
+    addLegend("bottomright", pal = pal, values = ~KC_shape_merged$nonwhitepop_zcores,
+    title = "Z Scores",
+    opacity = .7
+  )
+m
 ```
 
-# Gentrification of King County, Washington: 2009 & 2017
 
