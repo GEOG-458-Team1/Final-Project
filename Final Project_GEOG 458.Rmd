@@ -141,20 +141,29 @@ PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged <- sp::spTransform(KC_shape_merged,PRO)
 
 #leaflet map
-m <- leaflet(KC_shape_merged) %>% 
-  addTiles() %>% addProviderTiles(providers$OpenStreetMap) %>% 
-  addPolygons(fill = TRUE, fillColor = ~pal(as.numeric(KC_shape_merged$gscore)),
+m <- leaflet(KC_shape_merged) %>%
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addPolygons(
+  fillColor = ~pal(as.numeric(KC_shape_merged$gscore)),
   weight = 1,
   opacity = 1,
   color = "white",
+  dashArray = "",
   fillOpacity = 0.7,
-  label = labels
-  )
+  highlight = highlightOptions(
+    weight = 5,
+    color = "white",
+    dashArray = "",
+    fillOpacity = 0.7,
+    bringToFront = TRUE),
+    label = labels)
+#add legend
 m <- m %>% 
     addLegend("bottomright", pal = pal, values = ~KC_shape_merged$gscore,
     title = "Gentrification Index",
     opacity = .7
-  )
+  ) 
+
 m
 ```
 
