@@ -12,6 +12,7 @@ library(sp)
 library(leaflet)
 library(raster)
 library(tmap)
+library(tidyr)
 library(dplyr)
 ```
 
@@ -19,26 +20,26 @@ library(dplyr)
 knitr::opts_chunk$set(echo = TRUE)
 
 #loading in the data and cutting it to the columns we need 
-ethnicity2009 <-read.csv(file="2009_Ethnicity/ACS_09_5YR_B02001_with_ann.csv", header=TRUE, sep=",")
+ethnicity2009 <-read.csv(file="data/2009_Ethnicity/ACS_09_5YR_B02001_with_ann.csv", header=TRUE, sep=",")
 ethnicity2009 <- ethnicity2009[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD02")]
 
 #2017 data
 #ethnicty
-ethnicity2017<-read.csv(file="2017_Ethnicity/ACS_17_5YR_B02001_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+ethnicity2017<-read.csv(file="data/2017_Ethnicity/ACS_17_5YR_B02001_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
 ethnicity2017 <- ethnicity2017[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD02")]
 colnames(ethnicity2017)[colnames(ethnicity2017)=="HD01_VD01"] <- "ethnicity.HD01_VD01"
 colnames(ethnicity2017)[colnames(ethnicity2017)=="HD01_VD02"] <- "ethnicity.HD01_VD02"
 
 #education
-edu2017<-read.csv(file="2017_Education_Attainment/ACS_17_5YR_S1501_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+edu2017<-read.csv(file="data/2017_Education_Attainment/ACS_17_5YR_S1501_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
 edu2017 <- edu2017[-1,c("GEO.id", "GEO.id2","HC01_EST_VC06","HC01_EST_VC12")]
 
 #poverty
-poverty2017 <-read.csv(file="2017_Poverty/ACS_17_5YR_S1701_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+poverty2017 <-read.csv(file="data/2017_Poverty/ACS_17_5YR_S1701_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
 poverty2017 <- poverty2017[-1,c("GEO.id", "GEO.id2","HC03_EST_VC01")]
 
 #housing
-housing2017 <-read.csv(file="2017_Housing/ACS_17_5YR_B25003_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+housing2017 <-read.csv(file="data/2017_Housing/ACS_17_5YR_B25003_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
 housing2017 <- housing2017[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD03")]
 
 
@@ -59,7 +60,7 @@ ethnicity2017 <- ethnicity2017 %>%
 
 ```{r echo=FALSE}
 #loading in king county census tract
-KC_shape <- shapefile("king10ct/king10ct.shp")
+KC_shape <- shapefile("data/king10ct/king10ct.shp")
 
 #merge king county shapefile with population data
 KC_shape_merged <- merge(KC_shape,ethnicity2017,by.x='GEOID10'
