@@ -19,8 +19,20 @@ library(dplyr)
 knitr::opts_chunk$set(echo = TRUE)
 
 #loading in the data and cutting it to the columns we need 
-ethnicity2009 <-read.csv(file="data/2009_Ethnicity/ACS_09_5YR_B02001_with_ann.csv", header=TRUE, sep=",")
+#2009
+ethnicity2009<-read.csv(file="data/2009_Ethnicity/ACS_09_5YR_B02001_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
 ethnicity2009 <- ethnicity2009[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD02")]
+colnames(ethnicity2009)[colnames(ethnicity2009)=="HD01_VD01"] <- "ethnicity.HD01_VD01"
+colnames(ethnicity2009)[colnames(ethnicity2009)=="HD01_VD02"] <- "ethnicity.HD01_VD02"
+
+#education
+edu2009<-read.csv(file="data/2009_Education_Attainment/ACS_09_5YR_S1501_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+edu2009 <- edu2009[-1,c("GEO.id", "GEO.id2","HC01_EST_VC06","HC01_EST_VC12")]
+
+#housing
+housing2009 <-read.csv(file="data/2009_Housing/ACS_09_5YR_B25003_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
+housing2009 <- housing2009[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD03")]
+
 
 #2017 data
 #ethnicty
@@ -38,11 +50,37 @@ poverty2017 <- poverty2017[-1,c("GEO.id", "GEO.id2","HC03_EST_VC01")]
 housing2017 <-read.csv(file="data/2017_Housing/ACS_17_5YR_B25003_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
 housing2017 <- housing2017[-1,c("GEO.id", "GEO.id2","HD01_VD01","HD01_VD03")]
 
-
 #ethnicty merge test
 #ethnicty <- merge(ethnicity2017, ethnicity2009, by.x='GEO.id2',by.y='GEO.id2')
 
 ```
+```{r}
+#get percentage for each variable and create z scores for each percentage
+#get percent white population count
+ethnicity2009 <- ethnicity2009 %>% 
+  mutate(percentwhite = (as.numeric(ethnicity.HD01_VD02)/as.numeric(ethnicity.HD01_VD01)) * 100)
+
+#generate z scores for white population percent
+ethnicity2009 <- ethnicity2009 %>% 
+  mutate(percentwhite.zscore = scale(as.numeric(percentwhite)))
+
+#get percent of people over 25 who have bachelor's degree
+edu2009 <- edu2009 %>% 
+  mutate(percentbach = (as.numeric(HC01_EST_VC06)/as.numeric(HC01_EST_VC12)) * 100)
+
+#generate z scores
+edu2009 <- edu2009 %>% 
+  mutate(percentbach.zscore = scale(as.numeric(percentbach)))
+
+#get percent of people over 25 who have bachelor's degree
+housing2009 <- housing2009 %>% 
+  mutate(percentrent = (as.numeric(HD01_VD03)/as.numeric(HD01_VD01)) * 100)
+
+#generate z scores
+housing2009 <- housing2009 %>% 
+  mutate(percentrent.zscore = scale(as.numeric(percentrent)))
+```
+
 ```{r echo=FALSE,  message=FALSE, warning=FALSE}
 #get percentage for each variable and create z scores for each percentage
 #get percent white population count
@@ -83,6 +121,7 @@ housing2017 <- housing2017 %>%
 
 ```{r echo=FALSE,  message=FALSE, warning=FALSE}
 #loading in king county census tract
+#for 2017
 KC_shape <- shapefile("data/king10ct/king10ct.shp")
 
 #merging gentrification variables together
@@ -101,7 +140,7 @@ temporary$percentrent.zscore <- temporary$percentrent.zscore[,1]
 
 #make index by adding z scores and averaging them
 temporary <- temporary %>%
-  mutate(gscore = (percentwhite.zscore + percentbach.zscore + percentabovepov.zscore + percentrent.zscore)/4)
+  mutate(gscore = (percentwhite.zscore + percentbach.zscore + percentrent.zscore)/4)
 
 #merge dataframe with z scores to shapefile
 KC_shape_merged <- merge(KC_shape, temporary, by.x='GEOID10',
@@ -112,12 +151,93 @@ KC_shape_merged <- KC_shape_merged[KC_shape_merged$ALAND10 != 0 ,]
 
 ```
 
+```{r echo=FALSE,  message=FALSE, warning=FALSE}
+#foor 2009
+#loading in king county census tract
+KC_shape2 <- shapefile("data/king10ct/king10ct.shp")
+
+#merging gentrification variables together
+temporary2 <- merge(ethnicity2009, edu2009, by="GEO.id2")
+temporary2 <- merge(temporary2, housing2009, by="GEO.id2")
+
+#remove duplicate columns
+temporary2 <- temporary2[, !duplicated(colnames(temporary2))]
+
+#flatten columns into 1d vectors
+#temporary2$percentwhite.zscore <- temporary2$percentwhite.zscore[,1]
+#temporary2$percentbach.zscore <- temporary2$percentbach.zscore[,1]
+#temporary$percentrent.zscore <- temporary2$percentrent.zscore[,1]
+
+#make index by adding z scores and averaging them
+temporary2 <- temporary2 %>%
+  mutate(gscore2= (percentwhite.zscore + percentbach.zscore + percentrent.zscore)/3)
+
+#merge dataframe with z scores to shapefile
+KC_shape_merged2 <- merge(KC_shape, temporary2, by.x='GEOID10',
+                         by.y='GEO.id2')
+
+#get rid of polygons that have no land 
+KC_shape_merged2 <- KC_shape_merged2[KC_shape_merged2$ALAND10 != 0 ,]
+
+
+```
+
 
 ##Gentrification in King County, Washington 2017
 To get an index of gentrification we need to combine variables that are correlate with gentrification in order to get a combined index score. In this case, the variables that are correlated with gentrification are Percent of White Population, Percent of Population who are 25 years and older who have a Bachelor's Degree, Percent of Population who are above the Poverty Income Level, and Percent of Population of Renters. Then we have to standardize the population by getting the z scores for each variable to make the comparable to each other. Then we can add up the z scores for each variable and divide by 4 to get the average z score. This average z score can be used as an Index to measure Gentrification in the King County Tract.
+```{r echo=FALSE,  message=FALSE, warning=FALSE}
+#get range for data
+z_scores <- as.numeric(KC_shape_merged2$gscore2)
+#bins <- quantile(population, probs = c(0.25, 0.50, .75,1))
+bins <- quantile(z_scores, probs = seq(0, 1, by = 0.20), na.rm = TRUE)
+#create color pallete 
+pal <- colorBin("YlOrRd", domain = KC_shape_merged2$gscore2, bins = bins)
+
+#labels for leaflet
+labels <- sprintf(
+  "<strong>%s</strong><br>
+  Percent of Population White: %5.1f%%<br>
+  Percent of Population with Bachelor's Degree: %5.1f%%<br>
+  Percent of Population who Rent: %5.1f%% ",
+  KC_shape_merged2$NAMELSAD10, KC_shape_merged2$percentwhite, KC_shape_merged2$percentbach,
+  KC_shape_merged2$percentrent
+) %>% lapply(htmltools::HTML)
+
+
+#change projection of shapefile to work with leaflet
+PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
+KC_shape_merged2 <- sp::spTransform(KC_shape_merged2,PRO)
+
+#leaflet map
+m <- leaflet(KC_shape_merged2) %>%
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addPolygons(
+  fillColor = ~pal(as.numeric(KC_shape_merged2$gscore2)),
+  weight = 1,
+  opacity = 1,
+  color = "white",
+  dashArray = "",
+  fillOpacity = 0.7,
+  highlight = highlightOptions(
+    weight = 5,
+    color = "white",
+    dashArray = "",
+    fillOpacity = 0.7,
+    bringToFront = TRUE),
+    label = labels)
+#add legend
+m <- m %>% 
+    addLegend("bottomright", pal = pal, values = ~KC_shape_merged2$gscore2,
+    title = "Gentrification Index",
+    opacity = .7
+  ) 
+
+m
+```
 
 ```{r echo=FALSE,  message=FALSE, warning=FALSE}
 #get range for data
+#for 2017
 z_scores <- as.numeric(KC_shape_merged$gscore)
 #bins <- quantile(population, probs = c(0.25, 0.50, .75,1))
 bins <- quantile(z_scores, probs = seq(0, 1, by = 0.20), na.rm = TRUE)
@@ -141,7 +261,7 @@ PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged <- sp::spTransform(KC_shape_merged,PRO)
 
 #leaflet map
-m <- leaflet(KC_shape_merged) %>%
+m2 <- leaflet(KC_shape_merged) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
   addPolygons(
   fillColor = ~pal(as.numeric(KC_shape_merged$gscore)),
@@ -158,13 +278,17 @@ m <- leaflet(KC_shape_merged) %>%
     bringToFront = TRUE),
     label = labels)
 #add legend
-m <- m %>% 
+m2 <- m2 %>% 
     addLegend("bottomright", pal = pal, values = ~KC_shape_merged$gscore,
     title = "Gentrification Index",
     opacity = .7
   ) 
 
-m
+m2
+```
+```{r}
+difference <- merge(temporary, temporary2, by="GEO.id2")
+#difference <- difference[, !duplicated(colnames(difference))]
 ```
 
 
