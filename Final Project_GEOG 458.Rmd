@@ -13,6 +13,7 @@ library(leaflet)
 library(raster)
 library(tmap)
 library(dplyr)
+library(tigris)
 ```
 
 ```{r include=FALSE}
@@ -42,7 +43,7 @@ colnames(ethnicity2017)[colnames(ethnicity2017)=="HD01_VD01"] <- "ethnicity.HD01
 colnames(ethnicity2017)[colnames(ethnicity2017)=="HD01_VD02"] <- "ethnicity.HD01_VD02"
 #education
 edu2017<-read.csv(file="data/2017_Education_Attainment/ACS_17_5YR_S1501_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
-edu2017 <- edu2017[-1,c("GEO.id", "GEO.id2","HC01_EST_VC06","HC01_EST_VC12")]
+edu2017 <- edu2017[-1,c("GEO.id", "GEO.id2","HC01_EST_VC08","HC01_EST_VC14")]
 #poverty
 poverty2017 <-read.csv(file="data/2017_Poverty/ACS_17_5YR_S1701_with_ann.csv", header=TRUE, sep=",", stringsAsFactors = FALSE)
 poverty2017 <- poverty2017[-1,c("GEO.id", "GEO.id2","HC03_EST_VC01")]
@@ -66,7 +67,7 @@ ethnicity2009 <- ethnicity2009 %>%
 
 #get percent of people over 25 who have bachelor's degree
 edu2009 <- edu2009 %>% 
-  mutate(percentbach = (as.numeric(HC01_EST_VC06)/as.numeric(HC01_EST_VC12)) * 100)
+  mutate(percentbach = (as.numeric(HC01_EST_VC12)/as.numeric(HC01_EST_VC06)) * 100)
 
 #generate z scores
 edu2009 <- edu2009 %>% 
@@ -93,7 +94,7 @@ ethnicity2017 <- ethnicity2017 %>%
 
 #get percent of people over 25 who have bachelor's degree
 edu2017 <- edu2017 %>% 
-  mutate(percentbach = (as.numeric(HC01_EST_VC06)/as.numeric(HC01_EST_VC12)) * 100)
+  mutate(percentbach = (as.numeric(HC01_EST_VC14)/as.numeric(HC01_EST_VC08)) * 100)
 
 #generate z scores
 edu2017 <- edu2017 %>% 
@@ -140,7 +141,7 @@ temporary$percentrent.zscore <- temporary$percentrent.zscore[,1]
 
 #make index by adding z scores and averaging them
 temporary <- temporary %>%
-  mutate(gscore = (percentwhite.zscore + percentbach.zscore + percentrent.zscore)/4)
+  mutate(gscore = (percentwhite.zscore + percentbach.zscore + percentrent.zscore)/3)
 
 #merge dataframe with z scores to shapefile
 KC_shape_merged <- merge(KC_shape, temporary, by.x='GEOID10',
@@ -155,6 +156,7 @@ KC_shape_merged <- KC_shape_merged[KC_shape_merged$ALAND10 != 0 ,]
 #foor 2009
 #loading in king county census tract
 KC_shape2 <- shapefile("data/king10ct/king10ct.shp")
+KC_water <- area_water("WA", "King")
 
 #merging gentrification variables together
 temporary2 <- merge(ethnicity2009, edu2009, by="GEO.id2")
@@ -207,7 +209,7 @@ labels <- sprintf(
 #change projection of shapefile to work with leaflet
 PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged2 <- sp::spTransform(KC_shape_merged2,PRO)
-
+KC_water <- sp::spTransform(KC_water,PRO)
 #leaflet map
 m <- leaflet(KC_shape_merged2) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
@@ -224,7 +226,9 @@ m <- leaflet(KC_shape_merged2) %>%
     dashArray = "",
     fillOpacity = 0.7,
     bringToFront = TRUE),
-    label = labels)
+    label = labels) %>%
+  addPolygons(data=KC_water, weight = 1, color = "blue",fillOpacity = 1
+  )
 #add legend
 m <- m %>% 
     addLegend("bottomright", pal = pal, values = ~KC_shape_merged2$gscore2,
