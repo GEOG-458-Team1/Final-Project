@@ -198,7 +198,13 @@ KC_shape_merged2 <- KC_shape_merged2[KC_shape_merged2$ALAND10 != 0 ,]
 
 
 ##Gentrification in King County, Washington
-To get an index of gentrification we need to combine variables that are correlate with gentrification in order to get a combined index score. In this case, the variables that are correlated with gentrification are Percent of White Population, Percent of Population who are 25 years and older who have a Bachelor's Degree, Percent of Population who are above the Poverty Income Level, and Percent of Population of Renters. Then we have to standardize the population by getting the z scores for each variable to make the comparable to each other. Then we can add up the z scores for each variable and divide by 4 to get the average z score. This average z score can be used as an Index to measure Gentrification in the King County Tract.
+The variables that we ussed to measure Gentrification in the King County area are Percent of White Poppulation, Percent of Population who are 25 years and older who have a Bachelor's Degree, Percent of Population who are renters, and the Median Home Value. To compare the Gentrification of 2017 with 2009, we create an index that will serve as a baseline for Gentrification / Class Value in each census tract. This is called the Census Tract Area Value in this case. 
+
+The reason why we want to create a index that will represent the Census Tract Value is to see how much of the Census Tract has changed from 2009. The difference in Census Tract Values will serve as a measurement of Gentrification. 
+
+To create the index to measure the Census Tract Area Value in both years, we converted all our variables to z scores. Converting all our variables to z scores allows us to standardize the variables so that they are comparable to eachother. Then we add the z scores up and divid by 4 to get a composite z score that will represent the Census Tract Value. 
+
+This Censuus Tract Area Value can be a measurement of well-being of the tract. To get gentrification we will find the difference of the well-being of each tract! 
 
 ###Census Tract Area Value in King County, Washington 2009
 ```{r echo=FALSE,  message=FALSE, warning=FALSE}
