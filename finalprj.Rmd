@@ -1,0 +1,48 @@
+---
+title: "GEOG 458 Final Project"
+author: "Aldrin Carbonell"
+date: "March 6, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Gentrification of King County: 2009 vs. 2017
+
+Research Question: How has gentrification affected King County in the years 2009 and 2017?
+
+Argument: We hypothesize that more census tracts in the Seattle area will be gentrified in the year 2017 when compared to 2009.
+
+## Context:
+According to [Merriam Webster](https://www.merriam-webster.com/dictionary/gentrification), the definition of gentrification is:
+
+> "the process of repairing and rebuilding homes and businesses in a deteriorating area (such as an urban neighborhood) accompanied by an influx of middle-class or affluent people and that often results in the displacement of earlier, usually poorer residents". 
+
+Essentially, gentrification can be thought of as displacing low income, often communities of color to develop new, more expensive properties.
+
+![](seagent.png)
+
+"Andy's stuff""
+
+## Overview of Data
+We decided to focus on King County because we already knew Seattle was a hotspot for gentrification, so we wanted to see if this pattern existed in other parts of the county. Our visualizations will occur at the tract level, since we are familiar with prior datasets that use same.
+
+2009 and 2017 were the first full years of Obama's & Trump's terms respectively?
+
+Data source: American Fact Finder Census Data
+
+Problems with data: Comparing percentages is flawed when there is high population variation among census tracts. Also, housing prices inflate temporally no matter what.
+
+## Methodology
+To answer our research question, our group decided to conceptualize our understanding of the term gentrification into separate variables. We selected variables based on the the City of Seattle's DPD (Department of Planning and Development) [report](https://www.seattle.gov/dpd/cs/groups/pan/@pan/documents/web_informational/p2273984.pdf?fbclid=IwAR1FXr6J97_m1tCBzHihvBprQveGuptxuODydrdDtHve6wm4gDNYuMQQHm0), which listed several indicators that represented risk of displacement. 
+These variables for each tract include: Ethnicity, Educational Attainment, Median Household Value, Housing Status (Renters vs Buyers), proximity to Link Light Rail.
+
+![Map of Link Light Rail](literail.png)
+
+Another indicator of risk of displacement was proximity to Link Light Rail.
+Didn't have time to include this in our spatial visualizations and calculations, but I thought it was worth mentioning.
+The census tracts which are nearest to (insert stations here) Stations have been gentrified from 2009 to 2017 the most.
+
