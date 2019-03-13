@@ -1,55 +1,10 @@
 ---
-title: "GEOG 458 Final Project"
+title: "Final Project"
 author: "Aldrin Carbonell, Johnny Nguyen, Andy Tseng, Samuel Perng, Justin Choi"
-date: "March 12, 2019"
+date: "March 6, 2019"
 output: html_document
 ---
 # Gentrification of King County, Washington: 2009 & 2017
-
-### **Research Question: How has gentrification affected King County in the years 2009 and 2017?**
-
-### **Argument: We hypothesize that more census tracts in the Seattle area will be gentrified in the year 2017 when compared to 2009.**
-
-## Context:
-According to [Merriam Webster](https://www.merriam-webster.com/dictionary/gentrification), the definition of gentrification is:
-
-> "the process of repairing and rebuilding homes and businesses in a deteriorating area (such as an urban neighborhood) accompanied by an influx of middle-class or affluent people and that often results in the displacement of earlier, usually poorer residents". 
-
-Essentially, gentrification can be thought of as displacing low income, often communities of color to develop new, more expensive properties.
-
-![](seagent.png)
-
-## History of Gentrification in Seattle
-### Racial Restrictive Covenants in Seattle
-
-In the past, there were many racial restrictive covenants which were enforceable contracts that if the owner violated it in any way, would result in them risking the property. Much of this specifies that neighborhoods are reserved for whites, and that "Asiatic, African, or Negro blood, lineage, or extraction" are not allowed to occupy the property. This was common after 1926 when the Supreme Court allowed the use of racial restrictions. However, in 1948, the court declared that it no longer be valid. However, even that did nothing to change the segregation that was already in place. Now, the neighborhoods that predominantly consisted of minorities are now being transformed into areas for those of high income, particularly white and Asian American professionals. One of the places that was heavily impacted by racial restrictive covenants was the Central District. In the 20th century, the working-class minority families were forced into the Central District as it was one of the places that allowed minorities to occupy property. Now, gentrification has transformed the area into a place for those of higher income, displacing families of lower income. As the former Seattle mayor Norm Rice stated: gentrification "clearly isn't racist, it's economic". 
-
-### Seattle Tech Boom
-
-Gentrification has been a prime repercussion to Seattle's advancement in technology. With companies like Microsoft, Boeing, and Amazon, many people were displaced due to new construction and heavier rent. Amazon has become one of the largest tech companies throughout the past two decades with lasting changes all throughout Seattle. What Amazon brought to Seattle was not only an influx of techies, but also a change to many Seattle neighborhoods through rising house prices, traffic, as well as construction. The rise of Amazon resulted in a closure many local shops to create higher class redevelopments. With the influx of techies and a significant increase in tech jobs, many companies moved to Seattle in search for employees and vice versa. With this, many local shops had to close due to increased rent, or construction along with the tech boom. At the same time, many people were displaced due to the increased demand of housing, employees, and redevelopment. 
-
-### Seattle Growth
-The U.S Census Bureau has released new numbers for population, and it shows that Seattle has now become the nation's fastest growing city in the decade. Adding up all the growth since 2010, Seattle has grown by 18.7 percent which leaves Texas at second place with 17.9 percent.
-
-### Sources:
-
-[Seattle Tech Boom](https://www.businessinsider.com/amazon-hq2-vanishing-seattle-shows-how-the-city-is-gentrifying-2018-2)
-
-[Racial Restrictive Covenants](https://www.seattlemag.com/article/seattles-ugly-past-segregation-our-neighborhoods)
-
-[Gentrification, Integration, or Displacement](https://www.blackpast.org/african-american-history/gentrification-integration-or-displacement-seattle-story/)
-
-## Overview of Data:
-We utilized census data from [American Fact Finder](https://factfinder.census.gov/faces/nav/jsf/pages/index.xhtml) for four different demographics that will be discussed later. We decided to focus on King County because we already knew Seattle was a hotspot for gentrification, so we wanted to see if this pattern existed in other parts of the county. Our visualizations will occur at the tract level, since we are familiar with prior datasets that use same. 
-
-2009 and 2017 were the first full years of Obama's & Trump's terms respectively, which is partly why we chose these years.
-
-## Problems with Data: 
-Comparing percentages is flawed when there is high population variation among census tracts. Also, housing prices inflate temporally no matter what.
-
-## Methodology & Interactive Maps
-To answer our research question, our group decided to conceptualize our understanding of the term gentrification into separate variables. We selected variables based on the the City of Seattle's DPD (Department of Planning and Development) [report](https://www.seattle.gov/dpd/cs/groups/pan/@pan/documents/web_informational/p2273984.pdf?fbclid=IwAR1FXr6J97_m1tCBzHihvBprQveGuptxuODydrdDtHve6wm4gDNYuMQQHm0), which listed several indicators that represented risk of displacement. 
-These variables for each tract include: Ethnicity, Educational Attainment, Housing Status (Renters vs. Buyers), and Median Household Value.
 
 ```{r setup, results='hide', message=FALSE, warning=FALSE, echo=FALSE}
 library(rgdal)
@@ -59,6 +14,7 @@ library(raster)
 library(tmap)
 library(dplyr)
 library(tigris)
+library(RColorBrewer)
 ```
 
 ```{r include=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
@@ -247,13 +203,15 @@ KC_shape_merged2 <- KC_shape_merged2[KC_shape_merged2$ALAND10 != 0 ,]
 
 ```
 
-The variables that we used to measure Gentrification/Development in the King County area are Percent of White Population, Percent of Population who are 25 years and older who have a Bachelor's Degree, Percent of Population who are renters, and the Median Home Value. To compare the Gentrification of 2017 with 2009, we create an index that will serve as a baseline for Gentrification in each census tract. We will refer to this as the **Census Tract Value**.
+
+##Gentrification in King County, Washington
+The variables that we used to measure Gentrification/Development in the King County area are Percent of White Poppulation, Percent of Population who are 25 years and older who have a Bachelor's Degree, Percent of Population who are renters, and the Median Home Value. To compare the Gentrification of 2017 with 2009, we create an index that will serve as a baseline for Gentrification in each census tract. This is called the Census Tract Value in this case. 
 
 The reason why we want to create a index that will represent the Census Tract Value is to see how much of the Census Tract has changed from 2009. The difference in Census Tract Values will serve as a measurement of Gentrification. 
 
-To create the index to measure the Census Tract Value in both years, we converted all our variables to z scores. Converting all our variables to z scores allows us to standardize the variables so that they are comparable to each other. Then we add the z scores up and divide by 4 to get a composite z score that will represent the Census Tract Value. 
+To create the index to measure the Census Tract Value in both years, we converted all our variables to z scores. Converting all our variables to z scores allows us to standardize the variables so that they are comparable to eachother. Then we add the z scores up and divid by 4 to get a composite z score that will represent the Census Tract Value. 
 
-This Census Tract Value can be a measurement of well-being of the tract. To attain Gentrification, we will find the difference of the well-being of each tract, It is important to calculate the difference in values because we want to see how much of these tracts have changed from 2009 to 2017.
+This Censuus Tract Value can be a measurement of well-being of the tract. To get Gentrification we will find the difference of the well-being of each tract! It is important to get the difference in values beause we want to see how much of these tracts have changed from 2009 to 2017.
 
 ###Census Tract Area Value in King County, Washington 2009
 ```{r echo=FALSE,  message=FALSE, warning=FALSE}
@@ -276,33 +234,42 @@ labels <- sprintf(
 ) %>% lapply(htmltools::HTML)
 
 
+
+## Combine the two color palettes
+rampcols <- c("#E0000A", "#FFFFFF", "#000BA8")
+
+classPal <- colorNumeric(palette = rampcols, domain = KC_shape_merged2$gscore2)
+
+
 #change projection of shapefile to work with leaflet
 PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged2 <- sp::spTransform(KC_shape_merged2,PRO)
 KC_water <- sp::spTransform(KC_water,PRO)
+```
 
+```{r echo=FALSE,  message=FALSE, warning=FALSE}
 #leaflet map
 m <- leaflet(KC_shape_merged2) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
   addPolygons(
-  fillColor = ~pal(as.numeric(KC_shape_merged2$gscore2)),
+  fillColor = ~classPal(KC_shape_merged2$gscore2),
   weight = 1,
   opacity = 1,
   color = "white",
   dashArray = "",
-  fillOpacity = 0.7,
+  fillOpacity = 1,
   highlight = highlightOptions(
     weight = 5,
     color = "white",
     dashArray = "",
-    fillOpacity = 0.7,
+    fillOpacity = 1,
     bringToFront = FALSE),
     label = labels) %>% 
     addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1)
 #add legend
 m <- m %>% 
-    addLegend("bottomright", pal = pal, values = ~KC_shape_merged2$gscore2,
-    title = "Census Tract Value Index",
+    addLegend("bottomright", pal = classPal, values = ~KC_shape_merged2$gscore2,
+    title = "Class Index",
     opacity = .7
   ) 
 
@@ -340,29 +307,29 @@ KC_shape_merged <- sp::spTransform(KC_shape_merged,PRO)
 m2 <- leaflet(KC_shape_merged) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
   addPolygons(
-  fillColor = ~pal(as.numeric(KC_shape_merged$gscore)),
+  fillColor = ~classPal(KC_shape_merged$gscore),
   weight = 1,
   opacity = 1,
   color = "white",
   dashArray = "",
-  fillOpacity = 0.7,
+  fillOpacity = 1,
   highlight = highlightOptions(
     weight = 5,
     color = "white",
     dashArray = "",
-    fillOpacity = 0.7,
+    fillOpacity = 1,
     bringToFront = FALSE),
     label = labels) %>% 
     addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1)
 #add legend
 m2 <- m2 %>% 
-    addLegend("bottomright", pal = pal, values = ~KC_shape_merged$gscore,
-    title = "Census Tract Value Index",
+    addLegend("bottomright", pal = classPal, values = ~KC_shape_merged$gscore,
+    title = "Class Index",
     opacity = .7
   ) 
 m2
 ```
-In 2017, we see more or less the same thing happening in King County. Where Seattle has relatively High CTV scores and South Seattle has lower CTV scores. 
+In 2017, we see more or less the some thing happening in King County. Where Seattle has relatively High CTV scores and South Seattle has lower CTV scores. 
 
 ###Development in King County, Washington 2009 - 2017 (Gentrification)
 
@@ -417,35 +384,43 @@ labels <- sprintf(
 PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged3 <- sp::spTransform(KC_shape_merged3,PRO)
 
+#color ramp for Gentrification
+rampcols2 <- c("#EB000A", "#FFFFFF", "#00FA07")
+
+diffPal <- colorNumeric(palette = rampcols2, domain = KC_shape_merged2$gscore2)
+```
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 #leaflet map
 m3 <- leaflet(KC_shape_merged3) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
    addPolygons(
-  fillColor = ~pal(as.numeric(KC_shape_merged3$gscorediff)),
+  fillColor = ~diffPal(KC_shape_merged3$gscorediff),
   weight = 1,
   opacity = 1,
   color = "white",
   dashArray = "",
-  fillOpacity = 0.7,
+  fillOpacity = 1,
   highlight = highlightOptions(
     weight = 5,
     color = "white",
     dashArray = "",
-    fillOpacity = 0.7,
+    fillOpacity = 1,
     bringToFront = FALSE),
     label = labels) %>% 
     addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1)
 
 #add legend
 m3 <- m3 %>% 
-    addLegend("bottomright", pal = pal, values = ~KC_shape_merged3$gscorediff,
-    title = "Development Index",
+    addLegend("bottomright", pal = diffPal, values = ~KC_shape_merged3$gscorediff,
+    title = "Gentrification Index",
     opacity = .7
   ) 
 m3
 
 ```
 
-This map shows where the greatest change in CTVs are which gives us an idea of which areas have been gentrified. According to this map, most of the gentrification has occurred in the Seattle Area. While the Southern region of Seattle generally stays the same. Some interesting things to note on this map is that in Seattle there is an increase of Population with a Bachelor's Degree and Population that are renters. This means that the area itself has changed to meet the standard of living for the middle class. While the South of Seattle has hasn't changed so much in terms of development, there has been in an increase in non-White Population. 
+This map shows where the greatest change in CTVs are which gives us an idea of which areas have been gentrified. According to this map, most of the gentrfication has occured in the Seattle Area. While the South of Seattle generally stays the same. Some interesting things to note on this map is that in Seattle there is an increase of Population with a Bachelor's Degree and Population that are renters. This means that the area itself has changed to meet the standard of living for the middle class. While the South of Seattle has hasn't changed so much in terms of development, there has been in an increase in non-White Population. 
 
-Overtime, we expect to see more development happen South of Seattle. However, as more development happens in South Seattle, there are also risks of displacing minorities away from the developed parts of Seattle because as development increases in an area, so does the cost of living. The reason why you don't want this to happen is because the most developed areas have more access to opportunity. This means that there is more access to opportunity for the people who can afford to live in the more developed areas while the people who can't afford to live in more developed areas have less access. In terms of social equity this is unfair to the population that can't afford to live in these areas. 
+Overtime, we expect to see more development happen South of Seattle. However, as more development happens in the South of Seattle, there are also risks of displacing minorities away from the developed parts of Seattle because as development increasing in an area so does the cost of living. The reason why you don't want this to happen is because the most developed area have more access to oppurtunity. This means that there are more access to opportunity for the people who can afford to live in the more developed areas while the people who can't afford to live in these more developed areas have less access. In terms of social equity this is unfair to the population that can't afford to live in these area. 
+
