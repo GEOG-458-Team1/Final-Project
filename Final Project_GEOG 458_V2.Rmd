@@ -64,6 +64,10 @@ library(raster)
 library(tmap)
 library(dplyr)
 library(tigris)
+library(spdep)
+
+# Public github repo to graph out local moran's I out. Source is at https://github.com/gisUTM/spatialplots
+source("https://raw.githubusercontent.com/gisUTM/spatialplots/master/plotlocalmoran.R")
 ```
 
 ```{r include=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
@@ -457,7 +461,28 @@ m3
 
 ```
 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+analysisShapefile = KC_shape_merged3
+nb <- poly2nb(analysisShapefile, queen=TRUE)
+lw <- nb2listw(nb, style="W", zero.policy=TRUE)
+lmi <- localmoran(analysisShapefile$gscore2, lw, na.action=na.exclude)
+```
 This map shows where the greatest change in CTVs are which gives us an idea of which areas have been gentrified. According to this map, most of the gentrification has occurred in the Seattle Area. While the Southern region of Seattle generally stays the same. Some interesting things to note on this map is that in Seattle there is an increase of Population with a Bachelor's Degree and Population that are renters. This means that the area itself has changed to meet the standard of living for the middle class. While South of Seattle has hasn't changed so much in terms of development, there has been in an increase in non-White Population. 
+
+#Spatial Analysis
+
+While it is one thing to take a look at the data at surface level, we also decided to do some spatial analysis that you would commonly see in ArcGIS and do it using R libraries. What we did was a Global Moran's I analysis for the difference in gentrification score mapped in Map 3. This analysis was done using a weight matrix based upon a row standardized method. The results are shown below
+
+> Moran's I: 0.371  
+Standard Deviation: 12.576  
+P-Value < 0.001  
+
+Based on this above, we can prove that there is some spatial clustering going on (as seen in the map) and that this is statistically significant. 
+
+When we go into mapping out the hotspots for the difference in gentrification based upon the Local Moran's I, we can see that the conclusions that we laid out during our analysis holds true when we look at this from a statistical point of view. The same trends still hold that the area above Seattle is a hot spot for gentrification, while the southern side of Seattle is a cold spot. This means that the change in gentrification around this area are situated as low clusters, indicating that this region has not been developed to the same extent as North Seattle.  
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+plot.local.moran(analysisShapefile,"gscorediff",lmi,lw,legend.location = "bottomright")
+```
 
 ## Conclusion:
 Over time, we expect to see more development happen South of Seattle. However, as more development happens in South Seattle, there are also risks of displacing minorities away from the developed parts of Seattle because as development increases in an area, so does the cost of living. The reason why you don't want this to happen is because the most developed areas have more access to opportunity. This means that there is more access to opportunity for the people who can afford to live in the more developed areas while the people who can't afford to live in more developed areas have less access. In terms of social equity this is unfair to the population that can't afford to live in these areas. 
