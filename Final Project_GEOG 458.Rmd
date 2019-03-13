@@ -14,9 +14,11 @@ library(raster)
 library(tmap)
 library(dplyr)
 library(tigris)
+library(RColorBrewer)
+library(knitr)
 ```
 
-```{r include=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
+```{r data load include=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 #loading in the data and cutting it to the columns we need 
@@ -66,7 +68,7 @@ colnames(medianhome2017)[colnames(medianhome2017)=="HD01_VD01"] <- "home.HD01_VD
 
 
 ```
-```{r message=FALSE, warning=FALSE, echo=FALSE}
+```{r generate z scores message=FALSE, warning=FALSE, echo=FALSE}
 #get percentage for each variable and create z scores for each percentage
 #get percent white population count
 ethnicity2009 <- ethnicity2009 %>% 
@@ -98,7 +100,7 @@ medianhome2009 <- medianhome2009 %>%
 
 ```
 
-```{r echo=FALSE,  message=FALSE, warning=FALSE}
+```{r generate z scores 2 echo=FALSE,  message=FALSE, warning=FALSE}
 #get percentage for each variable and create z scores for each percentage
 #get percent white population count
 ethnicity2017 <- ethnicity2017 %>% 
@@ -130,7 +132,7 @@ medianhome2017 <- medianhome2017 %>%
 
 ```
 
-```{r echo=FALSE,  message=FALSE, warning=FALSE}
+```{r shapefiles and index creation echo=FALSE,  message=FALSE, warning=FALSE}
 #loading in king county census tract
 #for 2017
 KC_shape <- shapefile("data/king10ct/king10ct.shp")
@@ -162,7 +164,7 @@ KC_shape_merged <- KC_shape_merged[KC_shape_merged$ALAND10 != 0 ,]
 
 ```
 
-```{r include=FALSE, echo=FALSE,  message=FALSE, warning=FALSE}
+```{r merge data to shapefiles include=FALSE, echo=FALSE,  message=FALSE, warning=FALSE}
 #foor 2009
 #loading in king county census tract
 KC_shape2 <- shapefile("data/king10ct/king10ct.shp")
@@ -207,7 +209,7 @@ To create the index to measure the Census Tract Area Value in both years, we con
 This Censuus Tract Area Value can be a measurement of well-being of the tract. To get gentrification we will find the difference of the well-being of each tract! 
 
 ###Census Tract Area Value in King County, Washington 2009
-```{r echo=FALSE,  message=FALSE, warning=FALSE}
+```{r 2009 map echo=FALSE,  message=FALSE, warning=FALSE}
 #get range for data
 z_scores <- as.numeric(KC_shape_merged2$gscore2)
 #bins <- quantile(population, probs = c(0.25, 0.50, .75,1))
@@ -231,7 +233,9 @@ labels <- sprintf(
 PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged2 <- sp::spTransform(KC_shape_merged2,PRO)
 KC_water <- sp::spTransform(KC_water,PRO)
+```
 
+```{r 2009 map 2 echo=FALSE,  message=FALSE, warning=FALSE}
 #leaflet map
 m <- leaflet(KC_shape_merged2) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
@@ -248,9 +252,10 @@ m <- leaflet(KC_shape_merged2) %>%
     dashArray = "",
     fillOpacity = 0.7,
     bringToFront = TRUE),
-    label = labels) 
- # addPolygons(data=KC_water, weight = 1, color = "blue",fillOpacity = 1
- # )
+    label = labels) %>% 
+  #Add water
+  addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1
+  )
 #add legend
 m <- m %>% 
     addLegend("bottomright", pal = pal, values = ~KC_shape_merged2$gscore2,
@@ -286,7 +291,9 @@ labels <- sprintf(
 #change projection of shapefile to work with leaflet
 PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged <- sp::spTransform(KC_shape_merged,PRO)
+```
 
+```{r echo=FALSE,  message=FALSE, warning=FALSE}
 #leaflet map
 m2 <- leaflet(KC_shape_merged) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
@@ -303,7 +310,10 @@ m2 <- leaflet(KC_shape_merged) %>%
     dashArray = "",
     fillOpacity = 0.7,
     bringToFront = TRUE),
-    label = labels)
+    label = labels) %>% 
+  #Add water 
+  addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1
+  )
 #add legend
 m2 <- m2 %>% 
     addLegend("bottomright", pal = pal, values = ~KC_shape_merged$gscore,
@@ -344,7 +354,9 @@ labels <- sprintf(
 #change projection of shapefile to work with leaflet
 PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged3 <- sp::spTransform(KC_shape_merged3,PRO)
+```
 
+```{r echo=FALSE,  message=FALSE, warning=FALSE}
 #leaflet map
 m3 <- leaflet(KC_shape_merged3) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
@@ -361,7 +373,10 @@ m3 <- leaflet(KC_shape_merged3) %>%
     dashArray = "",
     fillOpacity = 0.7,
     bringToFront = TRUE),
-    label = labels)
+    label = labels) %>% 
+  #Add water 
+  addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1
+  )
 #add legend
 m3 <- m3 %>% 
     addLegend("bottomright", pal = pal, values = ~KC_shape_merged3$gscorediff,
