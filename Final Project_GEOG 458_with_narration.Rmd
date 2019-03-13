@@ -259,10 +259,6 @@ This Census Tract Value can be a measurement of well-being of the tract. To atta
 ```{r echo=FALSE,  message=FALSE, warning=FALSE}
 #get range for data
 z_scores <- as.numeric(KC_shape_merged2$gscore2)
-#bins <- quantile(population, probs = c(0.25, 0.50, .75,1))
-bins <- quantile(z_scores, probs = seq(0, 1, by = 0.20), na.rm = TRUE)
-#create color pallete 
-pal <- colorBin("YlOrRd", domain = KC_shape_merged2$gscore2, bins = bins)
 
 #labels for leaflet
 labels <- sprintf(
