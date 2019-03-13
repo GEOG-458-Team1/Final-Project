@@ -7,3 +7,4 @@ Our final project for this course focuses on visualizing gentrification among Ki
 
 ![](seanight.png)
 
+Link: https://students.washington.edu/justinch/final_project.html
