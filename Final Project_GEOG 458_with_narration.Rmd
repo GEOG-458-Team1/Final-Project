@@ -275,6 +275,11 @@ labels <- sprintf(
   KC_shape_merged2$percentrent, KC_shape_merged2$home.HD01_VD01
 ) %>% lapply(htmltools::HTML)
 
+#Color ramp for class
+rampcols <- c("#E0000A", "#FFFFFF", "#000BA8")
+#pallete for class
+classPal <- colorNumeric(palette = rampcols, domain = KC_shape_merged2$gscore2)
+
 
 #change projection of shapefile to work with leaflet
 PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
@@ -285,24 +290,24 @@ KC_water <- sp::spTransform(KC_water,PRO)
 m <- leaflet(KC_shape_merged2) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
   addPolygons(
-  fillColor = ~pal(as.numeric(KC_shape_merged2$gscore2)),
+  fillColor = ~classPal(KC_shape_merged2$gscore2),
   weight = 1,
   opacity = 1,
   color = "white",
   dashArray = "",
-  fillOpacity = 0.7,
+  fillOpacity = 1,
   highlight = highlightOptions(
     weight = 5,
     color = "white",
     dashArray = "",
-    fillOpacity = 0.7,
+    fillOpacity = 1,
     bringToFront = FALSE),
     label = labels) %>% 
     addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1)
 #add legend
 m <- m %>% 
-    addLegend("bottomright", pal = pal, values = ~KC_shape_merged2$gscore2,
-    title = "Census Tract Value Index",
+    addLegend("bottomright", pal = classPal, values = ~KC_shape_merged2$gscore2,
+    title = "Class Index",
     opacity = .7
   ) 
 
@@ -340,24 +345,24 @@ KC_shape_merged <- sp::spTransform(KC_shape_merged,PRO)
 m2 <- leaflet(KC_shape_merged) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
   addPolygons(
-  fillColor = ~pal(as.numeric(KC_shape_merged$gscore)),
+  fillColor = ~classPal(KC_shape_merged$gscore),
   weight = 1,
   opacity = 1,
   color = "white",
   dashArray = "",
-  fillOpacity = 0.7,
+  fillOpacity = 1,
   highlight = highlightOptions(
     weight = 5,
     color = "white",
     dashArray = "",
-    fillOpacity = 0.7,
+    fillOpacity = 1,
     bringToFront = FALSE),
     label = labels) %>% 
     addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1)
 #add legend
 m2 <- m2 %>% 
-    addLegend("bottomright", pal = pal, values = ~KC_shape_merged$gscore,
-    title = "Census Tract Value Index",
+    addLegend("bottomright", pal = classPal, values = ~KC_shape_merged$gscore,
+    title = "Class Index",
     opacity = .7
   ) 
 m2
@@ -417,29 +422,34 @@ labels <- sprintf(
 PRO <- sp::CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
 KC_shape_merged3 <- sp::spTransform(KC_shape_merged3,PRO)
 
+#color ramp for Gentrification
+rampcols2 <- c("#EB000A", "#FFFFFF", "#00FA07")
+
+diffPal <- colorNumeric(palette = rampcols2, domain = KC_shape_merged2$gscore2)
+
 #leaflet map
 m3 <- leaflet(KC_shape_merged3) %>%
   addProviderTiles(providers$OpenStreetMap) %>% 
    addPolygons(
-  fillColor = ~pal(as.numeric(KC_shape_merged3$gscorediff)),
+  fillColor = ~diffPal(KC_shape_merged3$gscorediff),
   weight = 1,
   opacity = 1,
   color = "white",
   dashArray = "",
-  fillOpacity = 0.7,
+  fillOpacity = 1,
   highlight = highlightOptions(
     weight = 5,
     color = "white",
     dashArray = "",
-    fillOpacity = 0.7,
+    fillOpacity = 1,
     bringToFront = FALSE),
     label = labels) %>% 
     addPolygons(data=KC_water, weight = 1, color = "#aad3df",fillOpacity = 1)
 
 #add legend
 m3 <- m3 %>% 
-    addLegend("bottomright", pal = pal, values = ~KC_shape_merged3$gscorediff,
-    title = "Development Index",
+    addLegend("bottomright", pal = diffPal, values = ~KC_shape_merged3$gscorediff,
+    title = "Gentrification Index",
     opacity = .7
   ) 
 m3
